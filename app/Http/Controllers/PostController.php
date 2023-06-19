@@ -29,8 +29,9 @@ class PostController extends Controller
     }
     public function all()
     {
-        $posts=Post::all();
-        $posts=$posts->where('user_id','!=',auth()->id());
+        $posts = Post::all();
+        $posts = $posts->where('user_id', '!=', auth()->id());
+        $posts = collect($posts->values());
         return response()->json([
             'data' => $posts,
         ]);
@@ -57,21 +58,21 @@ class PostController extends Controller
                 'message' => 'post updated successfully',
                 'data' => $post,
             ]);
-        }
-        else return response()->json([
-            'message' => 'it\'s not allowed to update others post'
-        ]);
+        } else
+            return response()->json([
+                'message' => 'it\'s not allowed to update others post'
+            ]);
     }
     public function delete(Post $post)
     {
         if ($post->user_id == auth()->id() || auth()->user()->hasRole('admin')) {
-        $post->delete();
-        return response()->json([
-            'message' => 'post deleted successfully',
-        ]);
-        }
-        else return response()->json([
-            'message' => 'it\'s not allowed to delete others post'
-        ]);
+            $post->delete();
+            return response()->json([
+                'message' => 'post deleted successfully',
+            ]);
+        } else
+            return response()->json([
+                'message' => 'it\'s not allowed to delete others post'
+            ]);
     }
 }

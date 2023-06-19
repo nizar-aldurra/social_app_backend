@@ -27,6 +27,7 @@ class CommentController extends Controller
     public function all(){
         $comments=Comment::all();
         $comments=$comments->where('user_id','!=',auth()->id());
+        $comments = collect($comments->values());
         return response()->json([
             'data' => $comments,
         ]);

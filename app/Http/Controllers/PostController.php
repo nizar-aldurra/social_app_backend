@@ -11,6 +11,7 @@ class PostController extends Controller
 {
     public function get(Post $post)
     {
+        $post['is_liked'] = auth()->user()->likedPosts()->where('post_id', $post->id)->exists();
         return response()->json([
             'data' => $post,
         ]);
@@ -27,11 +28,25 @@ class PostController extends Controller
             'data' => $post->comments,
         ]);
     }
+    public function changeLikingStatus(Post $post){
+        if(auth()->user()->likedPosts()->where('post_id', $post->id)->exists()){
+            auth()->user()->likedPosts()->detach($post->id);
+        }else{
+            auth()->user()->likedPosts()->attach($post->id);
+        }
+        return response()->json([
+            'isLiked' => auth()->user()->likedPosts()->where('post_id', $post->id)->exists()
+        ]);
+    }
     public function all()
     {
         $posts = Post::all();
         $posts = $posts->where('user_id', '!=', auth()->id());
         $posts = collect($posts->values());
+        $posts = $posts->map(function ($post) {
+            $post['is_liked'] = auth()->user()->likedPosts()->where('post_id', $post->id)->exists();
+            return $post;
+        });
         return response()->json([
             'data' => $posts,
         ]);
@@ -40,6 +55,7 @@ class PostController extends Controller
     {
         $validated = $request->validated();
         $validated['user_id'] = auth()->id();
+        $validated['user_name'] = auth()->user()->name;
         $post = Post::create($validated);
         return response()->json([
             'message' => 'post created successfully',

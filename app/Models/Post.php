@@ -11,7 +11,7 @@ class Post extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title','body','image','user_id'];
+    protected $fillable = ['title','body','image','user_id','user_name',];
 
     public function comments(): HasMany
     {
@@ -21,5 +21,8 @@ class Post extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+    public function likers(){
+        return $this->belongsToMany(User::class,'user_post_likes','post_id','user_id');
     }
 }

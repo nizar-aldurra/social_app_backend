@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function all(){
+    public function allUsers(){
         if(auth()->user()->hasRole('admin')){
             return response()->json([
                 'data' => User::all(),
@@ -27,8 +27,14 @@ class UserController extends Controller
         ]);
     }
     public function getUserPostsById(User $user){
+        $posts = $user->posts;
+        $posts= $posts->map(function ($post){
+            $post['is_liked'] = auth()->user()->likedPosts()->where('post_id',$post->id)->exists();
+            return $post;
+        });
         return response()->json([
-            'data' => $user->posts,
+            'data' => $posts,
+            'user' => $user,
         ]);
     }
     public function updateInfo(UpdateUserInfoRequest $request)

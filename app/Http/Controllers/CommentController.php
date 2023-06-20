@@ -34,7 +34,8 @@ class CommentController extends Controller
     }
     public function create(AddCommentRequest $request){
         $validated=$request->validated();
-        $validated['user_id']=auth()->user()->getAuthIdentifier();
+        $validated['user_id']=auth()->id();
+        $validated['user_id']=auth()->user()->name;
         Comment::create($validated);
         return response()->json([
             'message' => 'comment created successfully',

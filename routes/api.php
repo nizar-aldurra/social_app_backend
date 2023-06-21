@@ -26,6 +26,7 @@ Route::controller(AuthenticationController::class)->prefix('auth')->group(functi
 Route::controller(UserController::class)->middleware('auth:api')->prefix('user')->group(function () {
     Route::get('all_users', 'allUsers');
     Route::get('posts', 'getPosts');
+    Route::get('activities', 'getActivities');
     Route::get('posts/{user}', 'getUserPostsById');
     Route::post('update', 'updateInfo');
     Route::post('update/{user}', 'updateUserById');

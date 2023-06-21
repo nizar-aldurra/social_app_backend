@@ -13,10 +13,12 @@ class AuthenticationController extends Controller
     public function login(LoginRequest $request)
     {
         if (Auth::attempt($request->validated())) {
+            $user = auth()->user();
+            $user['isAdmin'] = auth()->user()->hasRole('admin');
             return response()->json([
                 'message' => 'user logged in successfully',
                 'statusCode' => 200,
-                'user'=>auth()->user(),
+                'user'=>$user,
                 'token' => auth()->user()->createToken('accessToken')->accessToken,
             ]);
         } else {
@@ -31,9 +33,10 @@ class AuthenticationController extends Controller
         $user->assignRole(['user']);
         $user->save();
         auth()->login($user);
+        $user['isAdmin'] = auth()->user()->hasRole('admin');
         return response()->json([
             'message' => 'User created successfully',
-            'user'=>auth()->user(),
+            'user'=>$user,
             'token' => $user->createToken('accessToken')->accessToken,
             'created' => true,
         ]);

@@ -26,12 +26,25 @@ class UserController extends Controller
             'data' => auth()->user()->posts,
         ]);
     }
+    public function getActivities()
+    {
+    $posts=auth()->user()->posts;
+    $comments = auth()->user()->comments;
+    $posts_comment = $comments->pluck('post');
+    $merged = $posts->merge($posts_comment);
+        return response()->json([
+            'merged' => $merged,
+            'posts' => $posts,
+            'comment_posts' => $posts_comment,
+        ]);
+    }
     public function getUserPostsById(User $user){
         $posts = $user->posts;
         $posts= $posts->map(function ($post){
             $post['is_liked'] = auth()->user()->likedPosts()->where('post_id',$post->id)->exists();
             return $post;
         });
+        $user['isAdmin'] = $user->hasRole('admin');
         return response()->json([
             'data' => $posts,
             'user' => $user,
@@ -39,15 +52,17 @@ class UserController extends Controller
     }
     public function updateInfo(UpdateUserInfoRequest $request)
     {
-        $user = auth()->user();
+        $user = User::find(auth()->id());
         $user->name = $request->name;
         $user->email = $request->email;
         $user->password = $request->password;
         $user->birth_day = $request->birth_day;
-        $user->save;
+        $user->save();
+        $user1=User::find(auth()->id());
         return response()->json([
             'message' => 'user information updated successfully',
-            'data' => auth()->user()
+            'data' => $user,
+            'user1' => $user1
         ]);
     }
     public function updateUserById(UpdateUserInfoRequest $request, User $user)

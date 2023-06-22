@@ -58,4 +58,17 @@ class User extends Authenticatable
     public function likedPosts(){
         return $this->belongsToMany(Post::class,'user_post_likes','user_id','post_id');
     }
+
+    public static function boot() {
+        parent::boot();
+        self::deleting(function($user) { // before delete() method call this
+            $user->posts()->each(function($post) {
+               $post->delete(); // <-- raise another deleting event on Post to delete comments
+            });
+            $user->likedPosts()->each(function($like) {
+               $like->delete(); // <-- raise another deleting event on Post to delete comments
+            });
+             // do the rest of the cleanup...
+        });
+    }
 }

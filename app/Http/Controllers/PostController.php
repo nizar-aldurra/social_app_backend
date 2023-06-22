@@ -12,6 +12,8 @@ class PostController extends Controller
     public function get(Post $post)
     {
         $post['is_liked'] = auth()->user()->likedPosts()->where('post_id', $post->id)->exists();
+        $post['likes'] = $post->likers()->count();
+        $post['comments'] = $post->comments()->count();
         return response()->json([
             'data' => $post,
         ]);
@@ -28,10 +30,11 @@ class PostController extends Controller
             'data' => $post->comments,
         ]);
     }
-    public function changeLikingStatus(Post $post){
-        if(auth()->user()->likedPosts()->where('post_id', $post->id)->exists()){
+    public function changeLikingStatus(Post $post)
+    {
+        if (auth()->user()->likedPosts()->where('post_id', $post->id)->exists()) {
             auth()->user()->likedPosts()->detach($post->id);
-        }else{
+        } else {
             auth()->user()->likedPosts()->attach($post->id);
         }
         return response()->json([
@@ -45,6 +48,8 @@ class PostController extends Controller
         $posts = collect($posts->values());
         $posts = $posts->map(function ($post) {
             $post['is_liked'] = auth()->user()->likedPosts()->where('post_id', $post->id)->exists();
+            $post['likes'] = $post->likers()->count();
+            $post['comments'] = $post->comments()->count();
             return $post;
         });
         return response()->json([
@@ -82,9 +87,11 @@ class PostController extends Controller
     public function delete(Post $post)
     {
         if ($post->user_id == auth()->id() || auth()->user()->hasRole('admin')) {
+            $post_id = $post->id;
             $post->delete();
             return response()->json([
                 'message' => 'post deleted successfully',
+                'post' => Post::find($post_id)
             ]);
         } else
             return response()->json([

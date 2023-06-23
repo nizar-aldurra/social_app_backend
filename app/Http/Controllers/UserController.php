@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateUserInfoRequest;
+use App\Http\Requests\UpdateUserPasswordRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -22,7 +24,7 @@ class UserController extends Controller
     }
     public function getPosts()
     {
-        $posts=auth()->user()->posts;
+        $posts = auth()->user()->posts;
         $posts = $posts->map(function ($post) {
             $post['likes'] = $post->likers()->count();
             $post['comments'] = $post->comments()->count();
@@ -32,22 +34,35 @@ class UserController extends Controller
             'data' => $posts,
         ]);
     }
-    public function getActivities()
+    public function getLikedPosts()
     {
-        $posts = auth()->user()->posts;
-        $comments = auth()->user()->comments;
-        $posts_comment = $comments->pluck('post');
-        $merged = $posts->merge($posts_comment);
-        $merged = $merged->map(function ($post) {
-            $post['is_liked'] = auth()->user()->likedPosts()->where('post_id', $post->id)->exists();
+        $posts = auth()->user()->likedPosts;
+        $posts = $posts->map(function ($post) {
             $post['likes'] = $post->likers()->count();
             $post['comments'] = $post->comments()->count();
             return $post;
         });
         return response()->json([
-            'merged' => $merged,
-            'posts' => $posts,
-            'comment_posts' => $posts_comment,
+            'data' => $posts,
+        ]);
+    }
+    public function getComments()
+    {
+        $comments = auth()->user()->comments;
+        return response()->json([
+            'data' => $comments,
+        ]);
+    }
+
+    public function getUserInfo()
+    {
+        $user=auth()->user();
+        $user['isAdmin'] = $user->hasRole('admin');
+        return response()->json([
+            'user' => $user,
+            'postsNum' => $user->posts()->count(),
+            'commentsNum' => $user->comments()->count(),
+            'likesNum' => $user->likedPosts()->count(),
         ]);
     }
     public function getUserPostsById(User $user)
@@ -71,12 +86,28 @@ class UserController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->save();
-        $user1 = User::find(auth()->id());
+        $user['isAdmin'] = $user->hasRole('admin');
         return response()->json([
             'message' => 'user information updated successfully',
             'data' => $user,
-            'user1' => $user1
         ]);
+    }
+    public function updatePassword(UpdateUserPasswordRequest $request)
+    {
+        $user = User::find(auth()->id());
+        if (Hash::check($request->current_password,$user->password)) {
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+            $user['isAdmin'] = $user->hasRole('admin');
+            return response()->json([
+                'message' => 'user Password updated successfully',
+                'data' => $user,
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'the current password that you give is not correct',
+            ],401);
+        }
     }
     public function updateUserById(UpdateUserInfoRequest $request, User $user)
     {

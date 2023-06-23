@@ -24,11 +24,14 @@ Route::controller(AuthenticationController::class)->prefix('auth')->group(functi
 });
 
 Route::controller(UserController::class)->middleware('auth:api')->prefix('user')->group(function () {
-    Route::get('all_users', 'allUsers');
+    Route::get('users', 'allUsers');
     Route::get('posts', 'getPosts');
-    Route::get('activities', 'getActivities');
+    Route::get('liked_posts', 'getLikedPosts');
+    Route::get('comments', 'getComments');
+    Route::get('info', 'getUserInfo');
     Route::get('posts/{user}', 'getUserPostsById');
-    Route::post('update', 'updateInfo');
+    Route::post('update_info', 'updateInfo');
+    Route::post('update_password', 'updatePassword');
     Route::post('update/{user}', 'updateUserById');
     Route::delete('{user}', 'deleteUserById');
 });

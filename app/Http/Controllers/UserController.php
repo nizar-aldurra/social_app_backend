@@ -53,7 +53,6 @@ class UserController extends Controller
             'data' => $comments,
         ]);
     }
-
     public function getUserInfo()
     {
         $user=auth()->user();

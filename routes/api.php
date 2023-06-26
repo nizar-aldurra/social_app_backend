@@ -29,6 +29,7 @@ Route::controller(UserController::class)->middleware('auth:api')->prefix('user')
     Route::get('liked_posts', 'getLikedPosts');
     Route::get('comments', 'getComments');
     Route::get('info', 'getUserInfo');
+    Route::get('info/{user}', 'getUserInfoAndPostsById');
     Route::get('posts/{user}', 'getUserPostsById');
     Route::post('update_info', 'updateInfo');
     Route::post('update_password', 'updatePassword');

@@ -65,6 +65,17 @@ class UserController extends Controller
             'likesNum' => $user->likedPosts()->count(),
         ]);
     }
+    public function getUserInfoAndPostsById(User $user)
+    {
+        $user=auth()->user();
+        $user['isAdmin'] = $user->hasRole('admin');
+        return response()->json([
+            'user' => $user,
+            'postsNum' => $user->posts()->count(),
+            'commentsNum' => $user->comments()->count(),
+            'likesNum' => $user->likedPosts()->count(),
+        ]);
+    }
     public function getUserPostsById(User $user)
     {
         $posts = $user->posts;

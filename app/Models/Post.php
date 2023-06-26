@@ -27,12 +27,14 @@ class Post extends Model
     }
     public static function boot() {
         parent::boot();
-        self::deleting(function($post) { // before delete() method call this
+        self::deleting(function($post) { 
             $post->comments()->each(function($comment) {
-               $comment->delete(); // <-- direct deletion
+               $comment->delete();
              });
              $post->likers()->detach();
-             // do the rest of the cleanup...
         });
+    }
+    public function images() {
+        return $this->hasMany(Image::class,'post_id','id');
     }
 }

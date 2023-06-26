@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class image extends Model
 {
+    protected $table = 'post_images';
     protected $fillable = ['path'];
     public function post(){
-        return $this->belongsTo(Post::class);
+        return $this->belongsTo(Post::class,'post_id','id');
     }
 }

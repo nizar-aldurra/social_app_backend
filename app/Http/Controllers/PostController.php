@@ -6,6 +6,7 @@ use App\Http\Requests\AddPostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -43,7 +44,7 @@ class PostController extends Controller
     }
     public function all()
     {
-        $posts = Post::all();
+        $posts = Post::with('images')->get();
         $posts = $posts->where('user_id', '!=', auth()->id());
         $posts = collect($posts->values());
         $posts = $posts->map(function ($post) {
@@ -61,10 +62,30 @@ class PostController extends Controller
         $validated = $request->validated();
         $validated['user_id'] = auth()->id();
         $validated['user_name'] = auth()->user()->name;
+        $uploadedImages = [];
+        if ($request->hasFile('images')) {
+            $images = $request->file('images');
+            foreach ($images as $image) {
+                $extension = $image->getClientOriginalExtension();
+                $imageName = 'image'.time().Str::random(100).'.'.$extension;
+                $path = $image->storeAs('images',$imageName);
+                $uploadedImages[] = $path;
+            }
+        }
+        try {
         $post = Post::create($validated);
+        $post->images()->createMany(
+            array_map(function ($path) {
+                return ['path' => $path];
+            }, $uploadedImages)
+        );
+          } catch (\Exception $e) {
+          
+            error_log($e->getMessage());
+          }
+
         return response()->json([
             'message' => 'post created successfully',
-            'data' => $post,
             'created' => true,
         ], 200);
     }

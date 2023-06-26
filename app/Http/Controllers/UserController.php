@@ -24,7 +24,7 @@ class UserController extends Controller
     }
     public function getPosts()
     {
-        $posts = auth()->user()->posts;
+        $posts = auth()->user()->posts()->with('images')->get();
         $posts = $posts->map(function ($post) {
             $post['is_liked'] = auth()->user()->likedPosts()->where('post_id', $post->id)->exists();
             $post['likes'] = $post->likers()->count();

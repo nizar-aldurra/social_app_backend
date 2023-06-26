@@ -24,7 +24,7 @@ class AddPostRequest extends FormRequest
         return [
             'title' => 'required|string',
             'body' => 'required|string',
-            'image',
+            'images',
         ];
     }
 }

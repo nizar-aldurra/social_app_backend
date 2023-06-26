@@ -26,6 +26,7 @@ class UserController extends Controller
     {
         $posts = auth()->user()->posts;
         $posts = $posts->map(function ($post) {
+            $post['is_liked'] = auth()->user()->likedPosts()->where('post_id', $post->id)->exists();
             $post['likes'] = $post->likers()->count();
             $post['comments'] = $post->comments()->count();
             return $post;
@@ -38,6 +39,7 @@ class UserController extends Controller
     {
         $posts = auth()->user()->likedPosts;
         $posts = $posts->map(function ($post) {
+            $post['is_liked'] = auth()->user()->likedPosts()->where('post_id', $post->id)->exists();
             $post['likes'] = $post->likers()->count();
             $post['comments'] = $post->comments()->count();
             return $post;
